@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Profile Management System</title>
+    <link href="https://fonts.googleapis.com/css?family=Nunito:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+        }
+        .navbar-brand {
+            font-family: 'Nunito', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        .profile-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+        }
+        .profile-section {
+            display: none;
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .profile-section h2 {
+            font-family: 'Nunito', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: #333333;
+            margin-bottom: 20px;
+        }
+        .profile-section p {
+            font-family: 'Nunito', sans-serif;
+            font-size: 16px;
+            font-weight: 400;
+            color: #555555;
+            margin-bottom: 10px;
+        }
+        .custom-alert {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 300px;
+            z-index: 9999;
+            display: none;
+        }
+        .custom-alert p {
+            margin-bottom: 0;
+        }
+        .custom-alert.alert-success {
+            background-color: #198754;
+        }
+        .custom-alert.alert-danger {
+            background-color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="#">Profile Management System</a>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">About</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Contact</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <form id="profile-form">
+                    <h2 class="text-center">Profile Details</h2>
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name:</label>
+                        <input type="text" class="form-control" id="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email:</label>
+                        <input type="email" class="form-control" id="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Profile Image:</label>
+                        <input type="file" class="form-control" id="image">
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-6">
+                <div class="profile-section" id="profile-section">
+                    <h2 class="text-center">Profile Section</h2>
+                    <div class="text-center">
+                        <img id="profile-image-preview" class="profile-image img-fluid rounded-circle" src="" alt="Profile Image">
+                    </div>
+                    <p class="text-center mt-3"><strong>Name:</strong> <span id="profile-name"></span></p>
+                    <p class="text-center"><strong>Email:</strong> <span id="profile-email"></span></p>
+                    <div class="text-center mt-3">
+                        <button id="edit-profile-btn" class="btn btn-primary">Edit</button>
+                        <button id="delete-profile-btn" class="btn btn-danger">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="success-alert" class="custom-alert alert alert-success">
+        <p id="alert-message"></p>
+    </div>
+
+    <script>
+        var profileForm = document.getElementById('profile-form');
+        var profileSection = document.getElementById('profile-section');
+        var profileName = document.getElementById('profile-name');
+        var profileEmail = document.getElementById('profile-email');
+        var profileImagePreview = document.getElementById('profile-image-preview');
+        var editProfileBtn = document.getElementById('edit-profile-btn');
+        var deleteProfileBtn = document.getElementById('delete-profile-btn');
+        var nameInput = document.getElementById('name');
+        var emailInput = document.getElementById('email');
+        var imageInput = document.getElementById('image');
+        var successAlert = document.getElementById('success-alert');
+        var alertMessage = document.getElementById('alert-message');
+
+        function loadProfileData() {
+            var storedProfileData = localStorage.getItem('profileData');
+
+            if (storedProfileData) {
+                var profileData = JSON.parse(storedProfileData);
+
+                nameInput.value = profileData.name;
+                emailInput.value = profileData.email;
+                profileName.textContent = profileData.name;
+                profileEmail.textContent = profileData.email;
+                profileImagePreview.src = profileData.image;
+                profileSection.style.display = 'block';
+                profileForm.style.display = 'none';
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', function() {
+            loadProfileData();
+        });
+
+        profileForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            var name = nameInput.value;
+            var email = emailInput.value;
+            var image = imageInput.files[0];
+
+            var profileData = {
+                name: name,
+                email: email,
+                image: null
+            };
+
+            profileName.textContent = name;
+            profileEmail.textContent = email;
+
+            if (image) {
+                var reader = new FileReader();
+
+                reader.onload = function(e) {
+                    profileImagePreview.src = e.target.result;
+                    profileData.image = e.target.result;
+
+                    localStorage.setItem('profileData', JSON.stringify(profileData));
+                };
+
+                reader.readAsDataURL(image);
+            } else {
+                localStorage.setItem('profileData', JSON.stringify(profileData));
+            }
+
+            profileSection.style.display = 'block';
+            profileForm.style.display = 'none';
+
+            showAlert('Profile created successfully!', 'success');
+        });
+
+        editProfileBtn.addEventListener('click', function() {
+            loadProfileData();
+
+            profileSection.style.display = 'none';
+            profileForm.style.display = 'block';
+
+            showAlert('Profile updated successfully!', 'success');
+        });
+
+        deleteProfileBtn.addEventListener('click', function() {
+            localStorage.removeItem('profileData');
+
+            profileSection.style.display = 'none';
+            profileForm.style.display = 'block';
+
+            nameInput.value = '';
+            emailInput.value = '';
+            imageInput.value = '';
+
+            showAlert('Profile deleted!', 'danger');
+        });
+
+        function showAlert(message, type) {
+            alertMessage.textContent = message;
+            successAlert.classList.remove('alert-success', 'alert-danger');
+            successAlert.classList.add('alert-' + type);
+            successAlert.style.display = 'block';
+            setTimeout(function() {
+                successAlert.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
